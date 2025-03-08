@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Определение космического тела</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Космический Анализатор</h1>
+    </header>
+    <div class="container">
+        <h1>Загрузите изображение</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="fileInput" name="file" accept="image/*" required>
+            <button type="submit">Анализировать</button>
+        </form>
+        <div id="result"></div>
+        <img id="preview" src="" style="max-width: 300px; display: none;">
+    </div>
+
+    <script>
+        document.getElementById("uploadForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let formData = new FormData();
+            let fileInput = document.getElementById("fileInput").files[0];
+            formData.append("file", fileInput);
+
+            fetch("/upload", { method: "POST", body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById("result").innerText = "Ошибка: " + data.error;
+                    } else {
+                        document.getElementById("result").innerText = `Тип: ${data.type}, Доверие: ${data.confidence.toFixed(2)}`;
+                        document.getElementById("preview").src = data.image_path;
+                        document.getElementById("preview").style.display = "block";
+                    }
+                })
+                .catch(error => {
+                    document.getElementById("result").innerText = "Ошибка запроса";
+                });
+        });
+    </script>
+</body>
+</html>
